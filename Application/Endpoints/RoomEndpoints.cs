@@ -1,5 +1,5 @@
-using Hotel.Application.QueryHandlers;
-using Hotel.Application.Queries;
+using Hotel.Application.Requests.Queries;
+using MediatR;
 
 namespace Hotel.Application.Endpoints;
 
@@ -7,9 +7,9 @@ public static class RoomEndpoints
 {
     public static void MapRoomEndpoints(this WebApplication app)
     {
-        app.MapGet("/api/rooms", async (GetAllRoomsQueryHandler handler) =>
+        app.MapGet("/api/rooms", async (ISender sender) =>
         {
-            var rooms = await handler.Handle(new GetAllRoomsQuery());
+            var rooms = await sender.Send(new GetAllRoomsQuery());
             return Results.Ok(rooms);
         });
     }

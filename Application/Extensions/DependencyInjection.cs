@@ -1,4 +1,3 @@
-using Hotel.Application.QueryHandlers;
 using Hotel.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,8 +13,8 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString, 
                 sqlOptions => sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "dbo")));
 
-        // Register query handlers
-        services.AddScoped<GetAllRoomsQueryHandler>();
+        // Register MediatR (auto-discovers all handlers)
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
         return services;
     }
