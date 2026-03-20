@@ -1,25 +1,26 @@
-using Hotel.Application.Endpoints;
 using Hotel.Application.Extensions;
+using Hotel.Presentation;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddOpenApi();
 builder.Services.AddApplicationServices(builder.Configuration);
 
+builder.Services
+    .AddRazorComponents()
+    .AddInteractiveServerComponents();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
+app.UseAntiforgery();
 
-app.MapGet("/", () => "Hotel API - Ready for Development");
-
-// Map all room endpoints
-app.MapRoomEndpoints();
+app.MapRazorComponents<App>()
+   .AddInteractiveServerRenderMode();
 
 app.Run();

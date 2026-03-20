@@ -1,0 +1,31 @@
+@page "/rooms"
+@using Hotel.Domain.Entities
+@using Hotel.Application.Requests.Queries
+@using MediatR
+@inject IMediator Mediator
+
+<h3>Rooms</h3>
+
+@if (rooms is null || rooms.Count == 0)
+{
+    <p>No rooms found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var room in rooms)
+        {
+            <li>Room @room.RoomNumber</li>
+        }
+    </ul>
+}
+
+@code {
+    private List<Room> rooms = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var query = new GetAllRoomsQuery();
+        rooms = await Mediator.Send(query);
+    }
+}
