@@ -1,20 +1,14 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container">
-
-        <!-- Brand -->
         <a class="navbar-brand fw-semibold" href="/">
-            🏨 Hotel
+            Hotel
         </a>
 
-        <!-- Toggle (pentru mobile) -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- Content -->
         <div class="collapse navbar-collapse" id="navbarMain">
-
-            <!-- LEFT SIDE -->
             <ul class="navbar-nav me-auto ms-3">
                 <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
@@ -24,13 +18,28 @@
                 </li>
             </ul>
 
-            <!-- RIGHT SIDE -->
-            <div class="d-flex">
-                <a class="btn btn-primary px-4" href="/login">
-                    Login
-                </a>
-            </div>
-
+            <AuthorizeView>
+                <Authorized>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-muted small">Signed in as @context.User.Identity?.Name</span>
+                        <form method="post" action="/account/logout" class="m-0">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="ReturnUrl" value="/" />
+                            <button class="btn btn-outline-secondary px-4" type="submit">Logout</button>
+                        </form>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-outline-secondary px-4" href="/register">
+                            Register
+                        </a>
+                        <a class="btn btn-primary px-4" href="/login">
+                            Login
+                        </a>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
     </div>
 </nav>

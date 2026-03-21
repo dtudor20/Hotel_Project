@@ -1,0 +1,65 @@
+@page "/register"
+
+<PageTitle>Register</PageTitle>
+
+<div class="row justify-content-center py-5">
+    <div class="col-12 col-md-8 col-lg-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 p-lg-5">
+                <h1 class="h3 mb-3">Create account</h1>
+                <p class="text-muted mb-4">Create an Identity account for the hotel portal.</p>
+
+                @if (!string.IsNullOrWhiteSpace(Error))
+                {
+                    <div class="alert alert-danger" role="alert">@Error</div>
+                }
+
+                <form method="post" action="/account/register">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="@SafeReturnUrl" />
+
+                    <div class="mb-3">
+                        <label class="form-label" for="email">Email</label>
+                        <input class="form-control" id="email" name="Email" type="email" autocomplete="username" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" id="password" name="Password" type="password" autocomplete="new-password" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="confirmPassword">Confirm password</label>
+                        <input class="form-control" id="confirmPassword" name="ConfirmPassword" type="password" autocomplete="new-password" required />
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" id="isAdmin" name="IsAdmin" type="checkbox" value="true" />
+                        <label class="form-check-label" for="isAdmin">Create this account as admin</label>
+                    </div>
+
+                    <button class="btn btn-primary w-100 mb-3" type="submit">Register</button>
+                </form>
+
+                <p class="text-center text-muted mb-0">
+                    Already have an account?
+                    <a href="/login">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    private string SafeReturnUrl =>
+        !string.IsNullOrWhiteSpace(ReturnUrl) && Uri.IsWellFormedUriString(ReturnUrl, UriKind.Relative)
+            ? ReturnUrl
+            : "/";
+}
