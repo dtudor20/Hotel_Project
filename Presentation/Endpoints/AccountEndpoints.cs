@@ -12,6 +12,7 @@ public static class AccountEndpoints
         var group = endpoints.MapGroup("/account");
 
         group.MapPost("/login", LoginAsync);
+        group.MapPost("/register", RegisterAsync);
         group.MapPost("/logout", LogoutAsync);
 
         return endpoints;
@@ -52,6 +53,41 @@ public static class AccountEndpoints
         return TypedResults.Redirect(GetSafeReturnUrl(request.ReturnUrl));
     }
 
+    private static async Task<IResult> RegisterAsync(
+        [FromForm] RegisterRequest request,
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager)
+    {
+        if (!MiniValidator.TryValidate(request))
+        {
+            return TypedResults.Redirect($"/register?error={Uri.EscapeDataString("Please complete all required fields.")}");
+        }
+
+        if (!string.Equals(request.Password, request.ConfirmPassword, StringComparison.Ordinal))
+        {
+            return TypedResults.Redirect($"/register?error={Uri.EscapeDataString("Passwords do not match.")}");
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = request.Email,
+            Email = request.Email,
+            IsAdmin = request.IsAdmin,
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(user, request.Password);
+
+        if (!result.Succeeded)
+        {
+            var errorMessage = result.Errors.FirstOrDefault()?.Description ?? "Registration failed.";
+            return TypedResults.Redirect($"/register?error={Uri.EscapeDataString(errorMessage)}");
+        }
+
+        await signInManager.SignInAsync(user, isPersistent: false);
+        return TypedResults.Redirect(GetSafeReturnUrl(request.ReturnUrl));
+    }
+
     private static string GetSafeReturnUrl(string? returnUrl)
     {
         return !string.IsNullOrWhiteSpace(returnUrl) && Uri.IsWellFormedUriString(returnUrl, UriKind.Relative)
@@ -75,6 +111,24 @@ public static class AccountEndpoints
 
     private sealed class LogoutRequest
     {
+        public string? ReturnUrl { get; init; }
+    }
+
+    private sealed class RegisterRequest
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; init; } = string.Empty;
+
+        [Required]
+        [MinLength(6)]
+        public string Password { get; init; } = string.Empty;
+
+        [Required]
+        public string ConfirmPassword { get; init; } = string.Empty;
+
+        public bool IsAdmin { get; init; }
+
         public string? ReturnUrl { get; init; }
     }
 }

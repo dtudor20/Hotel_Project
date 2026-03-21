@@ -33,6 +33,7 @@ begin
         [LockoutEnd] datetimeoffset null,
         [LockoutEnabled] bit not null,
         [AccessFailedCount] int not null,
+        [IsAdmin] bit not null constraint [DF_AspNetUsers_IsAdmin] default cast(0 as bit),
         constraint [PK_AspNetUsers] primary key ([Id])
     );
 
@@ -94,6 +95,13 @@ begin
         insert into [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion])
         values (N'20260321210500_AddIdentitySchema', N'10.0.0');
     end
+end
+
+if object_id(N'[dbo].[AspNetUsers]', N'U') is not null
+and col_length(N'[dbo].[AspNetUsers]', N'IsAdmin') is null
+begin
+    alter table [dbo].[AspNetUsers]
+    add [IsAdmin] bit not null constraint [DF_AspNetUsers_IsAdmin] default cast(0 as bit);
 end
 """;
 
