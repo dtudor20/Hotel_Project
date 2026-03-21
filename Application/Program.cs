@@ -24,6 +24,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
     await dbContext.Database.MigrateAsync();
+    await IdentitySchemaInitializer.EnsureIdentitySchemaAsync(dbContext);
 }
 
 if (app.Environment.IsDevelopment())
