@@ -2,6 +2,7 @@ using Hotel.Domain.Entities;
 using Hotel.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Hotel.Application.Extensions;
 
@@ -14,7 +15,8 @@ public static class DependencyInjection
         services.AddDbContext<HotelDbContext>(options =>
             options.UseSqlServer(
                 connectionString,
-                sqlOptions => sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "dbo")));
+                sqlOptions => sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "dbo"))
+                .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
         services
             .AddIdentityCore<ApplicationUser>(options =>
