@@ -1,7 +1,12 @@
+@using Hotel.Domain.Entities
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider Auth
+
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container">
         <a class="navbar-brand fw-semibold" href="/">
-            Hotel
+            &#x1F3E8; Hotel
         </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
@@ -21,25 +26,41 @@
             <AuthorizeView>
                 <Authorized>
                     <div class="d-flex align-items-center gap-3">
-                        <span class="text-muted small">Signed in as @context.User.Identity?.Name</span>
+                        @if (isAdmin)
+                        {
+                            <a class="btn btn-sm btn-outline-primary px-3" href="/admin">
+                                &#x1F6E1; Admin Panel
+                            </a>
+                        }
+                        <span class="text-muted small">@context.User.Identity?.Name</span>
                         <form method="post" action="/account/logout" class="m-0">
                             <AntiforgeryToken />
                             <input type="hidden" name="ReturnUrl" value="/" />
-                            <button class="btn btn-outline-secondary px-4" type="submit">Logout</button>
+                            <button class="btn btn-outline-secondary btn-sm px-3" type="submit">Logout</button>
                         </form>
                     </div>
                 </Authorized>
                 <NotAuthorized>
                     <div class="d-flex gap-2">
-                        <a class="btn btn-outline-secondary px-4" href="/register">
-                            Register
-                        </a>
-                        <a class="btn btn-primary px-4" href="/login">
-                            Login
-                        </a>
+                        <a class="btn btn-outline-secondary px-4" href="/register">Register</a>
+                        <a class="btn btn-primary px-4" href="/login">Login</a>
                     </div>
                 </NotAuthorized>
             </AuthorizeView>
         </div>
     </div>
 </nav>
+
+@code {
+    private bool isAdmin = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await Auth.GetAuthenticationStateAsync();
+        if (state.User.Identity?.IsAuthenticated == true)
+        {
+            var user = await UserManager.GetUserAsync(state.User);
+            isAdmin = user?.IsAdmin == true;
+        }
+    }
+}

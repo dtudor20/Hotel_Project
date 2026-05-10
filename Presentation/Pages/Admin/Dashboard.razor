@@ -1,0 +1,275 @@
+@page "/admin"
+@layout AdminLayout
+@attribute [Authorize]
+@using Hotel.Application.Requests.Queries
+@using Hotel.Domain.Entities
+@using MediatR
+@using Microsoft.AspNetCore.Identity
+@inject IMediator Mediator
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider Auth
+@inject NavigationManager Nav
+
+<PageTitle>Dashboard - Hotel Admin</PageTitle>
+
+@if (!initialized)
+{
+    <div class="d-flex align-items-center gap-3 mt-4">
+        <div class="spinner-border text-primary" role="status"></div>
+        <span class="text-muted">Loading...</span>
+    </div>
+}
+else
+{
+    <div class="dashboard-welcome mb-4">
+        <h2 class="dashboard-heading">Good day, Admin &#x1F44B;</h2>
+        <p class="text-muted mb-0">Here's what's happening with your hotel today.</p>
+    </div>
+
+    <div class="stats-grid mb-5">
+        <div class="stat-card stat-blue">
+            <div class="stat-icon">&#x1F6CF;</div>
+            <div class="stat-body">
+                <div class="stat-value">@stats!.TotalRooms</div>
+                <div class="stat-label">Total Rooms</div>
+            </div>
+        </div>
+        <div class="stat-card stat-green">
+            <div class="stat-icon">&#x2705;</div>
+            <div class="stat-body">
+                <div class="stat-value">@stats.AvailableRooms</div>
+                <div class="stat-label">Available Rooms</div>
+            </div>
+        </div>
+        <div class="stat-card stat-purple">
+            <div class="stat-icon">&#x1F465;</div>
+            <div class="stat-body">
+                <div class="stat-value">@stats.TotalUsers</div>
+                <div class="stat-label">Registered Users</div>
+            </div>
+        </div>
+        <div class="stat-card stat-orange">
+            <div class="stat-icon">&#x1F6E1;</div>
+            <div class="stat-body">
+                <div class="stat-value">@stats.AdminUsers</div>
+                <div class="stat-label">Administrators</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="admin-card h-100">
+                <h5 class="section-title mb-3">&#x26A1; Quick Actions</h5>
+                <div class="quick-actions">
+                    <a href="/admin/rooms" class="quick-action-btn">
+                        <span class="qa-icon">&#x2795;</span>
+                        <div>
+                            <div class="qa-title">Add New Room</div>
+                            <div class="qa-desc">Create a room with photo and details</div>
+                        </div>
+                    </a>
+                    <a href="/admin/rooms" class="quick-action-btn">
+                        <span class="qa-icon">&#x1F4CB;</span>
+                        <div>
+                            <div class="qa-title">Manage Rooms</div>
+                            <div class="qa-desc">Edit pricing, status and availability</div>
+                        </div>
+                    </a>
+                    <a href="/admin/users" class="quick-action-btn">
+                        <span class="qa-icon">&#x1F464;</span>
+                        <div>
+                            <div class="qa-title">Manage Users</div>
+                            <div class="qa-desc">View and control user accounts</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="admin-card h-100">
+                <h5 class="section-title mb-3">&#x1F4CA; Occupancy Overview</h5>
+                @{
+                    var occupancyPct = stats.TotalRooms > 0
+                        ? (int)(((double)(stats.TotalRooms - stats.AvailableRooms) / stats.TotalRooms) * 100)
+                        : 0;
+                }
+                <div class="occupancy-block">
+                    <div class="occupancy-numbers">
+                        <span class="occ-big">@occupancyPct<span class="occ-pct">%</span></span>
+                        <span class="occ-label">Occupied</span>
+                    </div>
+                    <div class="occ-bar-wrap">
+                        <div class="occ-bar">
+                            <div class="occ-fill" style="width: @occupancyPct%"></div>
+                        </div>
+                        <div class="occ-legend">
+                            <span class="legend-dot dot-occupied"></span> @(stats.TotalRooms - stats.AvailableRooms) occupied &nbsp;
+                            <span class="legend-dot dot-available"></span> @stats.AvailableRooms available
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .dashboard-heading {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #0f1624;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 14px;
+        padding: 22px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        border-left: 4px solid transparent;
+        transition: transform 0.2s;
+    }
+
+    .stat-card:hover { transform: translateY(-2px); }
+
+    .stat-blue   { border-left-color: #4080f0; }
+    .stat-green  { border-left-color: #28c76f; }
+    .stat-purple { border-left-color: #9c6ef4; }
+    .stat-orange { border-left-color: #ff9f43; }
+
+    .stat-icon {
+        font-size: 1.8rem;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: #f4f6fb;
+    }
+
+    .stat-blue   .stat-icon { background: #ebf0ff; }
+    .stat-green  .stat-icon { background: #e8fff4; }
+    .stat-purple .stat-icon { background: #f3eeff; }
+    .stat-orange .stat-icon { background: #fff5e8; }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #0f1624;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #8896a8;
+        margin-top: 3px;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0f1624;
+    }
+
+    .quick-actions { display: flex; flex-direction: column; gap: 10px; }
+
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        background: #f8faff;
+        border: 1px solid #e8edf8;
+        border-radius: 10px;
+        text-decoration: none !important;
+        color: inherit;
+        transition: all 0.18s;
+    }
+
+    .quick-action-btn:hover {
+        background: #eef2ff;
+        border-color: #c0d0f8;
+        text-decoration: none;
+        transform: translateX(3px);
+    }
+
+    .qa-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .qa-title { font-size: 0.9rem; font-weight: 600; color: #1a2035; }
+    .qa-desc  { font-size: 0.78rem; color: #8896a8; margin-top: 2px; }
+
+    .occupancy-block { display: flex; align-items: flex-start; gap: 24px; margin-top: 8px; }
+
+    .occupancy-numbers { text-align: center; min-width: 80px; }
+
+    .occ-big {
+        display: block;
+        font-size: 2.6rem;
+        font-weight: 800;
+        color: #0f1624;
+        line-height: 1;
+    }
+
+    .occ-pct { font-size: 1.2rem; font-weight: 600; }
+
+    .occ-label { font-size: 0.78rem; color: #8896a8; margin-top: 4px; display: block; }
+
+    .occ-bar-wrap { flex: 1; padding-top: 8px; }
+
+    .occ-bar {
+        height: 14px;
+        background: #e8f5e9;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 10px;
+    }
+
+    .occ-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4080f0, #9c6ef4);
+        border-radius: 8px;
+        transition: width 0.5s ease;
+    }
+
+    .occ-legend { font-size: 0.78rem; color: #6c757d; }
+    .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+    .dot-occupied  { background: #4080f0; }
+    .dot-available { background: #28c76f; }
+
+    @@media (max-width: 900px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @@media (max-width: 576px) {
+        .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+</style>
+
+@code {
+    private DashboardStats? stats;
+    private bool initialized = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await Auth.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user?.IsAdmin != true)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        stats = await Mediator.Send(new GetDashboardStatsQuery());
+        initialized = true;
+    }
+}

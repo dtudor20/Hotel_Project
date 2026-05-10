@@ -39,6 +39,9 @@ public static class AccountEndpoints
 
         if (result.Succeeded)
         {
+            if (user.IsAdmin && string.IsNullOrWhiteSpace(request.ReturnUrl))
+                return TypedResults.Redirect("/admin");
+
             return TypedResults.Redirect(GetSafeReturnUrl(request.ReturnUrl));
         }
 

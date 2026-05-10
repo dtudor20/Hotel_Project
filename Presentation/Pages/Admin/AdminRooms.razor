@@ -1,0 +1,669 @@
+@page "/admin/rooms"
+@layout AdminLayout
+@attribute [Authorize]
+@using Hotel.Application.Requests.Commands
+@using Hotel.Application.Requests.Queries
+@using Hotel.Domain.Entities
+@using MediatR
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Identity
+@inject IMediator Mediator
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider Auth
+@inject NavigationManager Nav
+@inject IWebHostEnvironment WebHostEnv
+
+<PageTitle>Rooms - Hotel Admin</PageTitle>
+
+@if (!initialized)
+{
+    <div class="d-flex align-items-center gap-3">
+        <div class="spinner-border text-primary" role="status"></div>
+        <span class="text-muted">Loading rooms...</span>
+    </div>
+}
+else
+{
+    <div class="page-header mb-4">
+        <div>
+            <h2 class="page-h2">Room Management</h2>
+            <p class="text-muted mb-0">Add, edit, and manage hotel rooms with photos.</p>
+        </div>
+        <button class="btn-admin-primary" @onclick="OpenAddModal">
+            &#x2795; Add Room
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success alert-dismissible mb-4" role="alert">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible mb-4" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    <div class="admin-card">
+        @if (rooms.Count == 0)
+        {
+            <div class="empty-table-state">
+                <div style="font-size:2.5rem">&#x1F6CF;</div>
+                <p class="mt-2 text-muted">No rooms yet. Click <strong>Add Room</strong> to get started.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>Room #</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Capacity</th>
+                            <th>Price / Night</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var room in rooms)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(room.PhotoPath))
+                                    {
+                                        <img src="@room.PhotoPath" alt="Room @room.RoomNumber"
+                                             class="table-thumb" />
+                                    }
+                                    else
+                                    {
+                                        <div class="table-thumb-placeholder">&#x1F6CF;</div>
+                                    }
+                                </td>
+                                <td><strong>@room.RoomNumber</strong></td>
+                                <td><span class="type-badge">@room.RoomType</span></td>
+                                <td class="desc-cell">@(string.IsNullOrEmpty(room.Description) ? "-" : room.Description)</td>
+                                <td>@room.Capacity</td>
+                                <td class="price-cell">@room.PricePerNight.ToString("C")</td>
+                                <td>
+                                    <span class="status-pill @(room.IsAvailable ? "pill-available" : "pill-unavailable")">
+                                        @(room.IsAvailable ? "Available" : "Unavailable")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn-action btn-edit" @onclick="() => OpenEditModal(room)">
+                                            &#x270F;&#xFE0F; Edit
+                                        </button>
+                                        <button class="btn-action btn-delete" @onclick="() => ConfirmDelete(room)">
+                                            &#x1F5D1; Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+}
+
+@* Add / Edit Modal *@
+@if (showModal)
+{
+    <div class="modal-backdrop" @onclick="CloseModal"></div>
+    <div class="modal-panel" @onclick:stopPropagation="true">
+        <div class="modal-panel-header">
+            <h5 class="modal-panel-title">@(editingRoom == null ? "Add New Room" : "Edit Room")</h5>
+            <button class="modal-close-btn" @onclick="CloseModal">&#x2715;</button>
+        </div>
+
+        <div class="modal-panel-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Room Number <span class="req">*</span></label>
+                    <input class="form-input" @bind="form.RoomNumber" placeholder="e.g. 101" maxlength="10" />
+                </div>
+                <div class="form-group">
+                    <label>Room Type <span class="req">*</span></label>
+                    <select class="form-input" @bind="form.RoomType">
+                        <option value="">Select type...</option>
+                        <option>Single</option>
+                        <option>Double</option>
+                        <option>Deluxe</option>
+                        <option>Suite</option>
+                        <option>Family</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea class="form-input" @bind="form.Description" rows="3"
+                          placeholder="Brief room description for guests..." maxlength="500"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Capacity <span class="req">*</span></label>
+                    <input class="form-input" type="number" min="1" max="20" @bind="form.Capacity" />
+                </div>
+                <div class="form-group">
+                    <label>Price per Night (RON) <span class="req">*</span></label>
+                    <input class="form-input" type="number" min="0" step="0.01" @bind="form.PricePerNight" />
+                </div>
+            </div>
+
+            @if (editingRoom != null)
+            {
+                <div class="form-group">
+                    <label>Availability</label>
+                    <div class="toggle-row">
+                        <input type="checkbox" id="availCheck" @bind="form.IsAvailable" class="form-check-input me-2" />
+                        <label for="availCheck">Room is available for booking</label>
+                    </div>
+                </div>
+            }
+
+            <div class="form-group">
+                <label>Room Photo</label>
+                @if (!string.IsNullOrEmpty(form.PhotoPath))
+                {
+                    <div class="photo-preview-wrap">
+                        <img src="@form.PhotoPath" alt="Preview" class="photo-preview" />
+                        <button type="button" class="remove-photo-btn" @onclick="RemovePhoto">Remove photo</button>
+                    </div>
+                }
+                <InputFile OnChange="OnPhotoSelected" accept="image/jpeg,image/png,image/webp" class="file-input" />
+                <p class="file-hint">JPEG, PNG or WebP — max 5 MB</p>
+                @if (uploadError is not null)
+                {
+                    <p class="text-danger small">@uploadError</p>
+                }
+            </div>
+        </div>
+
+        <div class="modal-panel-footer">
+            <button class="btn-admin-secondary" @onclick="CloseModal" disabled="@saving">Cancel</button>
+            <button class="btn-admin-primary" @onclick="SaveRoom" disabled="@saving">
+                @if (saving)
+                {
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                }
+                @(editingRoom == null ? "Create Room" : "Save Changes")
+            </button>
+        </div>
+    </div>
+}
+
+@* Delete confirmation *@
+@if (deletingRoom != null)
+{
+    <div class="modal-backdrop" @onclick="() => deletingRoom = null"></div>
+    <div class="confirm-dialog" @onclick:stopPropagation="true">
+        <div style="font-size:2rem; text-align:center; margin-bottom:8px">&#x26A0;&#xFE0F;</div>
+        <h5 class="text-center">Delete Room @deletingRoom.RoomNumber?</h5>
+        <p class="text-muted text-center small">This action cannot be undone.</p>
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn-admin-secondary flex-fill" @onclick="() => deletingRoom = null">Cancel</button>
+            <button class="btn-danger-full flex-fill" @onclick="DeleteRoom">Delete</button>
+        </div>
+    </div>
+}
+
+<style>
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .page-h2 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #0f1624;
+        margin-bottom: 4px;
+    }
+
+    .btn-admin-primary {
+        background: linear-gradient(135deg, #3060e0, #6090f0);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 9px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: opacity 0.2s;
+    }
+
+    .btn-admin-primary:hover:not(:disabled) { opacity: 0.88; }
+    .btn-admin-primary:disabled { opacity: 0.5; cursor: default; }
+
+    .btn-admin-secondary {
+        background: #f0f2f8;
+        color: #3060e0;
+        border: 1px solid #c8d4f8;
+        padding: 10px 20px;
+        border-radius: 9px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.18s;
+    }
+
+    .btn-admin-secondary:hover:not(:disabled) { background: #e0e8ff; }
+
+    .btn-danger-full {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 9px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.18s;
+    }
+
+    .btn-danger-full:hover { opacity: 0.88; }
+
+    .empty-table-state { text-align: center; padding: 60px 24px; }
+
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .admin-table th {
+        background: #f8faff;
+        color: #6878a0;
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e8edf8;
+        white-space: nowrap;
+    }
+
+    .admin-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f0f4fc;
+        color: #1a2035;
+        vertical-align: middle;
+    }
+
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td { background: #f8faff; }
+
+    .table-thumb {
+        width: 52px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #e0e8f0;
+    }
+
+    .table-thumb-placeholder {
+        width: 52px;
+        height: 40px;
+        background: #f0f2f8;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .type-badge {
+        background: #eef0ff;
+        color: #4060b0;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 2px 9px;
+        border-radius: 10px;
+    }
+
+    .desc-cell {
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #6c757d;
+        font-size: 0.82rem;
+    }
+
+    .price-cell { font-weight: 600; color: #0f1624; }
+
+    .status-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .pill-available   { background: #d4edda; color: #1a6e34; }
+    .pill-unavailable { background: #f8d7da; color: #842029; }
+
+    .action-btns { display: flex; gap: 6px; }
+
+    .btn-action {
+        padding: 5px 12px;
+        border-radius: 7px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: opacity 0.15s;
+    }
+
+    .btn-action:hover { opacity: 0.8; }
+
+    .btn-edit   { background: #eef0ff; color: #3060e0; }
+    .btn-delete { background: #fef0f0; color: #c0392b; }
+
+    /* Modal */
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(10,15,30,0.55);
+        z-index: 300;
+        backdrop-filter: blur(2px);
+    }
+
+    .modal-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(600px, 94vw);
+        background: white;
+        border-radius: 16px;
+        z-index: 301;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+    }
+
+    .modal-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid #f0f2f8;
+    }
+
+    .modal-panel-title { font-size: 1.05rem; font-weight: 700; color: #0f1624; margin: 0; }
+
+    .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 1.1rem;
+        color: #8896a8;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        line-height: 1;
+    }
+
+    .modal-close-btn:hover { background: #f0f2f8; }
+
+    .modal-panel-body {
+        padding: 20px 24px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .modal-panel-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 16px 24px;
+        border-top: 1px solid #f0f2f8;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: #4a5568; margin-bottom: 5px; }
+    .req { color: #dc3545; }
+
+    .form-input {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #d0d8ec;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        color: #1a2035;
+        background: #fafbff;
+        transition: border-color 0.15s;
+        outline: none;
+        font-family: inherit;
+    }
+
+    .form-input:focus { border-color: #6090f0; background: white; box-shadow: 0 0 0 3px rgba(60,120,240,0.1); }
+
+    textarea.form-input { resize: vertical; }
+
+    .toggle-row { display: flex; align-items: center; padding: 8px 0; }
+
+    .photo-preview-wrap { margin-bottom: 10px; position: relative; display: inline-block; }
+    .photo-preview { width: 160px; height: 110px; object-fit: cover; border-radius: 10px; border: 1px solid #e0e8f0; display: block; }
+    .remove-photo-btn {
+        position: absolute;
+        top: 6px; right: 6px;
+        background: rgba(220,53,69,0.85);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        padding: 3px 8px;
+        cursor: pointer;
+    }
+
+    .file-input { display: block; font-size: 0.85rem; color: #4a5568; }
+    .file-hint { font-size: 0.75rem; color: #8896a8; margin-top: 4px; margin-bottom: 0; }
+
+    /* Confirm dialog */
+    .confirm-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(360px, 94vw);
+        background: white;
+        border-radius: 16px;
+        z-index: 301;
+        padding: 28px 24px 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+</style>
+
+@code {
+    private List<Room> rooms = [];
+    private bool initialized = false;
+    private bool showModal = false;
+    private bool saving = false;
+    private Room? editingRoom;
+    private Room? deletingRoom;
+    private string? successMessage;
+    private string? errorMessage;
+    private string? uploadError;
+
+    private RoomForm form = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await Auth.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user?.IsAdmin != true)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        await LoadRooms();
+        initialized = true;
+    }
+
+    private async Task LoadRooms()
+    {
+        rooms = await Mediator.Send(new GetAllRoomsQuery());
+    }
+
+    private void OpenAddModal()
+    {
+        editingRoom = null;
+        form = new RoomForm { IsAvailable = true };
+        uploadError = null;
+        showModal = true;
+    }
+
+    private void OpenEditModal(Room room)
+    {
+        editingRoom = room;
+        form = new RoomForm
+        {
+            RoomNumber = room.RoomNumber,
+            RoomType = room.RoomType,
+            Description = room.Description,
+            PricePerNight = room.PricePerNight,
+            Capacity = room.Capacity,
+            IsAvailable = room.IsAvailable,
+            PhotoPath = room.PhotoPath
+        };
+        uploadError = null;
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        editingRoom = null;
+    }
+
+    private async Task OnPhotoSelected(InputFileChangeEventArgs e)
+    {
+        uploadError = null;
+        var file = e.File;
+
+        if (file.Size > 5 * 1024 * 1024)
+        {
+            uploadError = "File is too large. Maximum size is 5 MB.";
+            return;
+        }
+
+        var allowed = new[] { "image/jpeg", "image/png", "image/webp" };
+        if (!allowed.Contains(file.ContentType))
+        {
+            uploadError = "Only JPEG, PNG and WebP images are allowed.";
+            return;
+        }
+
+        var ext = Path.GetExtension(file.Name).ToLowerInvariant();
+        var fileName = $"{Guid.NewGuid()}{ext}";
+        var folder = Path.Combine(WebHostEnv.WebRootPath, "images", "rooms");
+        Directory.CreateDirectory(folder);
+        var fullPath = Path.Combine(folder, fileName);
+
+        await using var readStream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+        await using var writeStream = File.Create(fullPath);
+        await readStream.CopyToAsync(writeStream);
+
+        form.PhotoPath = $"/images/rooms/{fileName}";
+    }
+
+    private void RemovePhoto() => form.PhotoPath = null;
+
+    private async Task SaveRoom()
+    {
+        if (string.IsNullOrWhiteSpace(form.RoomNumber) || string.IsNullOrWhiteSpace(form.RoomType) || form.Capacity < 1)
+        {
+            errorMessage = "Room Number, Type and Capacity are required.";
+            return;
+        }
+
+        saving = true;
+        errorMessage = null;
+
+        try
+        {
+            if (editingRoom == null)
+            {
+                await Mediator.Send(new CreateRoomCommand(
+                    form.RoomNumber.Trim(),
+                    form.RoomType,
+                    form.Description?.Trim() ?? "",
+                    form.PricePerNight,
+                    form.Capacity,
+                    form.PhotoPath));
+
+                successMessage = $"Room {form.RoomNumber} created successfully.";
+            }
+            else
+            {
+                await Mediator.Send(new UpdateRoomCommand(
+                    editingRoom.Id,
+                    form.RoomNumber.Trim(),
+                    form.RoomType,
+                    form.Description?.Trim() ?? "",
+                    form.PricePerNight,
+                    form.Capacity,
+                    form.IsAvailable,
+                    form.PhotoPath));
+
+                successMessage = $"Room {form.RoomNumber} updated successfully.";
+            }
+
+            showModal = false;
+            await LoadRooms();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving room: {ex.Message}";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void ConfirmDelete(Room room) => deletingRoom = room;
+
+    private async Task DeleteRoom()
+    {
+        if (deletingRoom is null) return;
+
+        await Mediator.Send(new DeleteRoomCommand(deletingRoom.Id));
+        successMessage = $"Room {deletingRoom.RoomNumber} deleted.";
+        deletingRoom = null;
+        await LoadRooms();
+    }
+
+    private class RoomForm
+    {
+        public string RoomNumber { get; set; } = "";
+        public string RoomType { get; set; } = "";
+        public string Description { get; set; } = "";
+        public decimal PricePerNight { get; set; }
+        public int Capacity { get; set; } = 1;
+        public bool IsAvailable { get; set; } = true;
+        public string? PhotoPath { get; set; }
+    }
+}
