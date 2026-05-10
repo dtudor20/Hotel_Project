@@ -1,6 +1,4 @@
 @using Hotel.Domain.Entities
-@using Microsoft.AspNetCore.Identity
-@inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider Auth
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
@@ -26,12 +24,6 @@
             <AuthorizeView>
                 <Authorized>
                     <div class="d-flex align-items-center gap-3">
-                        @if (isAdmin)
-                        {
-                            <a class="btn btn-sm btn-outline-primary px-3" href="/admin">
-                                &#x1F6E1; Admin Panel
-                            </a>
-                        }
                         <span class="text-muted small">@context.User.Identity?.Name</span>
                         <form method="post" action="/account/logout" class="m-0">
                             <AntiforgeryToken />
@@ -52,15 +44,8 @@
 </nav>
 
 @code {
-    private bool isAdmin = false;
-
     protected override async Task OnInitializedAsync()
     {
-        var state = await Auth.GetAuthenticationStateAsync();
-        if (state.User.Identity?.IsAuthenticated == true)
-        {
-            var user = await UserManager.GetUserAsync(state.User);
-            isAdmin = user?.IsAdmin == true;
-        }
+        await Auth.GetAuthenticationStateAsync();
     }
 }
