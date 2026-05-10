@@ -12,12 +12,14 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
         
-        // Replace environment variable placeholder with actual password
-        var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
-        if (!string.IsNullOrEmpty(dbPassword))
+        // Replace password placeholder with value from configuration or environment variable
+        var dbPassword = configuration["DB_PASSWORD"] ?? Environment.GetEnvironmentVariable("DB_PASSWORD");
+        if (string.IsNullOrEmpty(dbPassword))
         {
-            connectionString = connectionString.Replace("{DB_PASSWORD}", dbPassword);
+            throw new InvalidOperationException("DB_PASSWORD configuration or environment variable is not set. Cannot connect to the database.");
         }
+        
+        connectionString = connectionString.Replace("{DB_PASSWORD}", dbPassword);
 
         services.AddDbContext<HotelDbContext>(options =>
             options.UseSqlServer(
