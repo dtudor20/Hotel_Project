@@ -1,0 +1,326 @@
+@page "/admin/users"
+@layout AdminLayout
+@attribute [Authorize]
+@using Hotel.Application.Requests.Commands
+@using Hotel.Application.Requests.Queries
+@using Hotel.Domain.Entities
+@using MediatR
+@using Microsoft.AspNetCore.Identity
+@inject IMediator Mediator
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider Auth
+@inject NavigationManager Nav
+
+<PageTitle>Users - Hotel Admin</PageTitle>
+
+@if (!initialized)
+{
+    <div class="d-flex align-items-center gap-3">
+        <div class="spinner-border text-primary" role="status"></div>
+        <span class="text-muted">Loading users...</span>
+    </div>
+}
+else
+{
+    <div class="page-header mb-4">
+        <div>
+            <h2 class="page-h2">User Management</h2>
+            <p class="text-muted mb-0">View and manage all registered accounts.</p>
+        </div>
+        <div class="user-count-badge">
+            @users.Count @(users.Count == 1 ? "user" : "users")
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="alert @(isError ? "alert-danger" : "alert-success") alert-dismissible mb-4" role="alert">
+            @statusMessage
+            <button type="button" class="btn-close" @onclick="() => statusMessage = null"></button>
+        </div>
+    }
+
+    <div class="admin-card">
+        @if (users.Count == 0)
+        {
+            <div class="empty-table-state">
+                <div style="font-size:2.5rem">&#x1F465;</div>
+                <p class="mt-2 text-muted">No users registered yet.</p>
+            </div>
+        }
+        else
+        {
+            <div class="users-search mb-3">
+                <input class="search-input" type="text" placeholder="&#x1F50D; Search by email..."
+                       @bind="searchTerm" @bind:event="oninput" />
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Email Confirmed</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in FilteredUsers)
+                        {
+                            var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow;
+
+                            <tr class="@(user.Id == currentUserId ? "current-user-row" : "")">
+                                <td>
+                                    <div class="user-cell">
+                                        <div class="user-avatar-sm">@GetInitials(user.Email)</div>
+                                        <div>
+                                            <div class="user-email">@user.Email</div>
+                                            @if (user.Id == currentUserId)
+                                            {
+                                                <div class="you-tag">You</div>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (user.IsAdmin)
+                                    {
+                                        <span class="role-badge role-admin">&#x1F6E1; Admin</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="role-badge role-user">&#x1F464; User</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.EmailConfirmed)
+                                    {
+                                        <span class="text-success">&#x2713; Confirmed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">&#x2717; Pending</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="status-pill @(isLocked ? "pill-unavailable" : "pill-available")">
+                                        @(isLocked ? "Suspended" : "Active")
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (user.Id != currentUserId)
+                                    {
+                                        <button class="btn-action @(isLocked ? "btn-activate" : "btn-suspend")"
+                                                @onclick="() => ToggleUser(user)">
+                                            @(isLocked ? "&#x25B6; Activate" : "&#x23F8; Suspend")
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (FilteredUsers.Count == 0 && !string.IsNullOrEmpty(searchTerm))
+            {
+                <p class="text-muted text-center py-3 small">No users match "<strong>@searchTerm</strong>"</p>
+            }
+        }
+    </div>
+}
+
+<style>
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .page-h2 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #0f1624;
+        margin-bottom: 4px;
+    }
+
+    .user-count-badge {
+        background: #eef0ff;
+        color: #4060b0;
+        padding: 8px 18px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .users-search { max-width: 320px; }
+
+    .search-input {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #d0d8ec;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        outline: none;
+        background: #fafbff;
+    }
+
+    .search-input:focus {
+        border-color: #6090f0;
+        box-shadow: 0 0 0 3px rgba(60,120,240,0.1);
+    }
+
+    .empty-table-state { text-align: center; padding: 60px 24px; }
+
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .admin-table th {
+        background: #f8faff;
+        color: #6878a0;
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e8edf8;
+        white-space: nowrap;
+    }
+
+    .admin-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f0f4fc;
+        color: #1a2035;
+        vertical-align: middle;
+    }
+
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td { background: #f8faff; }
+    .current-user-row td { background: #f0f5ff !important; }
+
+    .user-cell { display: flex; align-items: center; gap: 10px; }
+
+    .user-avatar-sm {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4060c0, #7090f0);
+        color: white;
+        font-weight: 700;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .user-email { font-size: 0.875rem; color: #1a2035; font-weight: 500; }
+    .you-tag { font-size: 0.7rem; color: #4060b0; font-weight: 600; background: #eef0ff; padding: 1px 6px; border-radius: 8px; display: inline-block; margin-top: 2px; }
+
+    .role-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 12px;
+        display: inline-block;
+    }
+
+    .role-admin { background: #fff3e0; color: #b86a00; }
+    .role-user  { background: #f0f2f8; color: #4a5568; }
+
+    .status-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .pill-available   { background: #d4edda; color: #1a6e34; }
+    .pill-unavailable { background: #f8d7da; color: #842029; }
+
+    .btn-action {
+        padding: 5px 12px;
+        border-radius: 7px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: opacity 0.15s;
+    }
+
+    .btn-action:hover { opacity: 0.8; }
+    .btn-activate { background: #d4edda; color: #1a6e34; }
+    .btn-suspend  { background: #fff3cd; color: #856404; }
+</style>
+
+@code {
+    private List<ApplicationUser> users = [];
+    private bool initialized = false;
+    private string searchTerm = "";
+    private string? currentUserId;
+    private string? statusMessage;
+    private bool isError = false;
+
+    private List<ApplicationUser> FilteredUsers =>
+        string.IsNullOrWhiteSpace(searchTerm)
+            ? users
+            : users.Where(u => u.Email?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await Auth.GetAuthenticationStateAsync();
+        var currentUser = await UserManager.GetUserAsync(authState.User);
+
+        if (currentUser?.IsAdmin != true)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        currentUserId = currentUser.Id;
+        await LoadUsers();
+        initialized = true;
+    }
+
+    private async Task LoadUsers()
+    {
+        users = await Mediator.Send(new GetAllUsersQuery());
+    }
+
+    private async Task ToggleUser(ApplicationUser user)
+    {
+        isError = false;
+        var success = await Mediator.Send(new ToggleUserActiveCommand(user.Id));
+
+        if (success)
+        {
+            var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow;
+            statusMessage = isLocked
+                ? $"User {user.Email} has been activated."
+                : $"User {user.Email} has been suspended.";
+
+            await LoadUsers();
+        }
+        else
+        {
+            isError = true;
+            statusMessage = "Failed to update user status.";
+        }
+    }
+
+    private static string GetInitials(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return "?";
+        return char.ToUpper(email[0]).ToString();
+    }
+}

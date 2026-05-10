@@ -1,0 +1,294 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Nav
+
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">&#x1F3E8;</span>
+            <div>
+                <div class="brand-name">Hotel Admin</div>
+                <div class="brand-sub">Management Panel</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">OVERVIEW</div>
+            <a class="sidebar-link @ActiveClass("/admin", exact: true)" href="/admin">
+                <span class="nav-icon">&#x1F4CA;</span>
+                Dashboard
+            </a>
+
+            <div class="nav-section-label">MANAGEMENT</div>
+            <a class="sidebar-link @ActiveClass("/admin/rooms")" href="/admin/rooms">
+                <span class="nav-icon">&#x1F6CF;</span>
+                Rooms
+            </a>
+            <a class="sidebar-link @ActiveClass("/admin/users")" href="/admin/users">
+                <span class="nav-icon">&#x1F465;</span>
+                Users
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a class="sidebar-link sidebar-link-muted" href="/rooms" target="_self">
+                <span class="nav-icon">&#x1F30D;</span>
+                View Site
+            </a>
+            <form method="post" action="/account/logout" class="m-0 mt-1">
+                <AntiforgeryToken />
+                <input type="hidden" name="ReturnUrl" value="/" />
+                <button class="sidebar-logout-btn" type="submit">
+                    <span class="nav-icon">&#x23FB;</span>
+                    Logout
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <div class="admin-content-area">
+        <header class="admin-topbar">
+            <div class="topbar-breadcrumb">
+                <span class="breadcrumb-root">Admin</span>
+                <span class="breadcrumb-sep">&#x2044;</span>
+                <span class="breadcrumb-current">@CurrentPageName</span>
+            </div>
+
+            <AuthorizeView>
+                <Authorized>
+                    <div class="topbar-user">
+                        <div class="user-avatar">@GetInitials(context.User.Identity?.Name)</div>
+                        <div class="user-info">
+                            <div class="user-name">@context.User.Identity?.Name</div>
+                            <div class="user-role">Administrator</div>
+                        </div>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </header>
+
+        <main class="admin-main-content">
+            @Body
+        </main>
+    </div>
+</div>
+
+<style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body { margin: 0; padding: 0; height: 100%; }
+
+    .admin-shell {
+        display: flex;
+        min-height: 100vh;
+        background: #f0f2f8;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    /* ── Sidebar ── */
+    .admin-sidebar {
+        width: 256px;
+        min-height: 100vh;
+        background: #0f1624;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 200;
+        overflow-y: auto;
+    }
+
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 24px 20px 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .brand-icon { font-size: 1.8rem; }
+
+    .brand-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1.2;
+    }
+
+    .brand-sub {
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.4);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .sidebar-nav {
+        flex: 1;
+        padding: 12px 0;
+    }
+
+    .nav-section-label {
+        padding: 18px 20px 6px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: rgba(255,255,255,0.28);
+        text-transform: uppercase;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 11px 20px;
+        color: rgba(255,255,255,0.55);
+        text-decoration: none !important;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-left: 3px solid transparent;
+        transition: all 0.18s;
+        cursor: pointer;
+    }
+
+    .sidebar-link:hover {
+        background: rgba(255,255,255,0.06);
+        color: rgba(255,255,255,0.9);
+        text-decoration: none;
+    }
+
+    .sidebar-link.active {
+        background: rgba(99, 145, 255, 0.14);
+        color: #7aabff;
+        border-left-color: #7aabff;
+    }
+
+    .sidebar-link-muted { color: rgba(255,255,255,0.38); }
+
+    .nav-icon { font-size: 1rem; flex-shrink: 0; }
+
+    .sidebar-bottom {
+        padding: 12px 12px 20px;
+        border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .sidebar-logout-btn {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        width: 100%;
+        background: rgba(220,53,69,0.12);
+        border: 1px solid rgba(220,53,69,0.25);
+        color: #f07070;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.18s;
+        margin-top: 4px;
+    }
+
+    .sidebar-logout-btn:hover {
+        background: rgba(220,53,69,0.25);
+        color: #ffaaaa;
+    }
+
+    /* ── Content area ── */
+    .admin-content-area {
+        margin-left: 256px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .admin-topbar {
+        height: 64px;
+        background: #fff;
+        border-bottom: 1px solid #e4e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 32px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+    }
+
+    .topbar-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-root { color: #8896a8; }
+    .breadcrumb-sep  { color: #bcc5d0; }
+    .breadcrumb-current { color: #1a2035; font-weight: 600; }
+
+    .topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4060c0, #7090f0);
+        color: white;
+        font-weight: 700;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .user-name { font-size: 0.85rem; font-weight: 600; color: #1a2035; line-height: 1.2; }
+    .user-role { font-size: 0.72rem; color: #8896a8; }
+
+    .admin-main-content {
+        padding: 32px;
+        flex: 1;
+    }
+
+    /* ── Shared admin card ── */
+    .admin-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        padding: 24px;
+    }
+
+    @@media (max-width: 900px) {
+        .admin-sidebar { width: 200px; }
+        .admin-content-area { margin-left: 200px; }
+    }
+</style>
+
+@code {
+    private string CurrentPageName => Nav.Uri switch
+    {
+        var u when u.Contains("/admin/rooms") => "Rooms",
+        var u when u.Contains("/admin/users") => "Users",
+        _ => "Dashboard"
+    };
+
+    private string ActiveClass(string path, bool exact = false)
+    {
+        var current = new Uri(Nav.Uri).AbsolutePath.TrimEnd('/');
+        var target = path.TrimEnd('/');
+        return exact ? (current == target ? "active" : "") : current.StartsWith(target) ? "active" : "";
+    }
+
+    private static string GetInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Split('@')[0].Split('.');
+        return parts.Length >= 2
+            ? $"{char.ToUpper(parts[0][0])}{char.ToUpper(parts[1][0])}"
+            : char.ToUpper(name[0]).ToString();
+    }
+}
