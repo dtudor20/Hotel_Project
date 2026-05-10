@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Hotel.Migrations
+namespace Hotel.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class AddRoomPhotoAndDescription : Migration
@@ -24,6 +24,15 @@ namespace Hotel.Migrations
                 type: "nvarchar(255)",
                 maxLength: 255,
                 nullable: true);
+
+            migrationBuilder.AlterColumn<bool>(
+                name: "IsAdmin",
+                table: "AspNetUsers",
+                type: "bit",
+                nullable: false,
+                oldClrType: typeof(bool),
+                oldType: "bit",
+                oldDefaultValue: false);
         }
 
         /// <inheritdoc />
@@ -36,6 +45,15 @@ namespace Hotel.Migrations
             migrationBuilder.DropColumn(
                 name: "PhotoPath",
                 table: "Rooms");
+
+            migrationBuilder.AlterColumn<bool>(
+                name: "IsAdmin",
+                table: "AspNetUsers",
+                type: "bit",
+                nullable: false,
+                defaultValue: false,
+                oldClrType: typeof(bool),
+                oldType: "bit");
         }
     }
 }
