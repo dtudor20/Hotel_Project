@@ -10,7 +10,14 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var connectionString = configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+        
+        // Replace environment variable placeholder with actual password
+        var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+        if (!string.IsNullOrEmpty(dbPassword))
+        {
+            connectionString = connectionString.Replace("{DB_PASSWORD}", dbPassword);
+        }
 
         services.AddDbContext<HotelDbContext>(options =>
             options.UseSqlServer(
