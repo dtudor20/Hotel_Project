@@ -24,4 +24,9 @@ public class Room
 
     [MaxLength(255)]
     public string? PhotoPath { get; set; }
+
+    [MaxLength(450)]
+    public string? ReservedByUserId { get; set; }
+
+    public DateTime? ReservedAt { get; set; }
 }

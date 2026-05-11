@@ -28,6 +28,18 @@ public class UpdateRoomCommandHandler : IRequestHandler<UpdateRoomCommand, bool>
         if (command.PhotoPath is not null)
             room.PhotoPath = command.PhotoPath;
 
+        if (command.UpdateReservation)
+        {
+            room.ReservedByUserId = command.ReservedByUserId;
+            room.ReservedAt = command.ReservedByUserId is null ? null : DateTime.UtcNow;
+        }
+        else if (command.IsAvailable && room.ReservedByUserId is not null)
+        {
+            // Admin freed the room — clear reservation metadata.
+            room.ReservedByUserId = null;
+            room.ReservedAt = null;
+        }
+
         await _dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }

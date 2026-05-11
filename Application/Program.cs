@@ -1,4 +1,5 @@
 using Hotel.Application.Extensions;
+using Hotel.Domain.Entities;
 using Hotel.Infrastructure.Data;
 using Hotel.Presentation;
 using Hotel.Presentation.Endpoints;
@@ -25,6 +26,10 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
     await dbContext.Database.MigrateAsync();
     await IdentitySchemaInitializer.EnsureIdentitySchemaAsync(dbContext);
+
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    await UserSeeder.SeedAsync(userManager);
+    await RoomSeeder.SeedAsync(dbContext, userManager);
 }
 
 if (app.Environment.IsDevelopment())

@@ -4,42 +4,42 @@
 <div class="admin-shell">
     <aside class="admin-sidebar">
         <div class="sidebar-brand">
-            <span class="brand-icon">&#x1F3E8;</span>
+            <span class="brand-mark">A</span>
             <div>
-                <div class="brand-name">Hotel Admin</div>
-                <div class="brand-sub">Management Panel</div>
+                <div class="brand-name">AurumStay</div>
+                <div class="brand-sub">Operations</div>
             </div>
         </div>
 
         <nav class="sidebar-nav">
-            <div class="nav-section-label">OVERVIEW</div>
+            <div class="nav-section-label">Overview</div>
             <a class="sidebar-link @ActiveClass("/admin", exact: true)" href="/admin">
-                <span class="nav-icon">&#x1F4CA;</span>
+                <span class="nav-icon">&#x25CB;</span>
                 Dashboard
             </a>
 
-            <div class="nav-section-label">MANAGEMENT</div>
+            <div class="nav-section-label">Management</div>
             <a class="sidebar-link @ActiveClass("/admin/rooms")" href="/admin/rooms">
-                <span class="nav-icon">&#x1F6CF;</span>
+                <span class="nav-icon">&#x25A1;</span>
                 Rooms
             </a>
             <a class="sidebar-link @ActiveClass("/admin/users")" href="/admin/users">
-                <span class="nav-icon">&#x1F465;</span>
+                <span class="nav-icon">&#x25C7;</span>
                 Users
             </a>
         </nav>
 
         <div class="sidebar-bottom">
-            <a class="sidebar-link sidebar-link-muted" href="/rooms" target="_self">
-                <span class="nav-icon">&#x1F30D;</span>
-                View Site
+            <a class="sidebar-link sidebar-link-muted" href="/" target="_self">
+                <span class="nav-icon">&#x2197;</span>
+                View public site
             </a>
             <form method="post" action="/account/logout" class="m-0 mt-1">
                 <AntiforgeryToken />
                 <input type="hidden" name="ReturnUrl" value="/" />
                 <button class="sidebar-logout-btn" type="submit">
                     <span class="nav-icon">&#x23FB;</span>
-                    Logout
+                    Sign out
                 </button>
             </form>
         </div>
@@ -48,8 +48,8 @@
     <div class="admin-content-area">
         <header class="admin-topbar">
             <div class="topbar-breadcrumb">
-                <span class="breadcrumb-root">Admin</span>
-                <span class="breadcrumb-sep">&#x2044;</span>
+                <span class="breadcrumb-root">Operations</span>
+                <span class="breadcrumb-sep">/</span>
                 <span class="breadcrumb-current">@CurrentPageName</span>
             </div>
 
@@ -75,20 +75,22 @@
 <style>
     *, *::before, *::after { box-sizing: border-box; }
 
-    html, body { margin: 0; padding: 0; height: 100%; }
+    html, body { margin: 0; padding: 0; height: 100%; background: #050505; }
 
     .admin-shell {
         display: flex;
         min-height: 100vh;
-        background: #f0f2f8;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        background: #0E0C08;
+        color: #F5EBC7;
+        font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     /* ── Sidebar ── */
     .admin-sidebar {
         width: 256px;
         min-height: 100vh;
-        background: #0f1624;
+        background: #050505;
+        border-right: 1px solid #2A2010;
         display: flex;
         flex-direction: column;
         position: fixed;
@@ -102,73 +104,87 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 24px 20px 20px;
-        border-bottom: 1px solid rgba(255,255,255,0.07);
+        padding: 26px 22px 22px;
+        border-bottom: 1px solid #2A2010;
     }
 
-    .brand-icon { font-size: 1.8rem; }
+    .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #D9B95F, #B8943D);
+        color: #14110B;
+        font-family: Georgia, serif;
+        font-weight: 700;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(217,185,95,0.30);
+    }
 
     .brand-name {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #fff;
-        line-height: 1.2;
+        font-family: Georgia, serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #F5EBC7;
+        line-height: 1.1;
+        letter-spacing: 0.03em;
     }
 
     .brand-sub {
-        font-size: 0.7rem;
-        color: rgba(255,255,255,0.4);
+        font-size: 0.65rem;
+        color: #B8A878;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.18em;
+        margin-top: 3px;
     }
 
-    .sidebar-nav {
-        flex: 1;
-        padding: 12px 0;
-    }
+    .sidebar-nav { flex: 1; padding: 14px 0; }
 
     .nav-section-label {
-        padding: 18px 20px 6px;
-        font-size: 0.65rem;
+        padding: 20px 22px 8px;
+        font-size: 0.62rem;
         font-weight: 700;
-        letter-spacing: 0.1em;
-        color: rgba(255,255,255,0.28);
+        letter-spacing: 0.22em;
+        color: #6F6657;
         text-transform: uppercase;
     }
 
     .sidebar-link {
         display: flex;
         align-items: center;
-        gap: 11px;
-        padding: 11px 20px;
-        color: rgba(255,255,255,0.55);
+        gap: 12px;
+        padding: 11px 22px;
+        color: #B8A878;
         text-decoration: none !important;
-        font-size: 0.875rem;
+        font-size: 0.88rem;
         font-weight: 500;
-        border-left: 3px solid transparent;
+        letter-spacing: 0.02em;
+        border-left: 2px solid transparent;
         transition: all 0.18s;
         cursor: pointer;
     }
 
     .sidebar-link:hover {
-        background: rgba(255,255,255,0.06);
-        color: rgba(255,255,255,0.9);
+        background: rgba(217,185,95,0.06);
+        color: #F5EBC7;
         text-decoration: none;
     }
 
     .sidebar-link.active {
-        background: rgba(99, 145, 255, 0.14);
-        color: #7aabff;
-        border-left-color: #7aabff;
+        background: rgba(217,185,95,0.10);
+        color: #D9B95F;
+        border-left-color: #D9B95F;
     }
 
-    .sidebar-link-muted { color: rgba(255,255,255,0.38); }
+    .sidebar-link-muted { color: rgba(184,168,120,0.55); }
 
-    .nav-icon { font-size: 1rem; flex-shrink: 0; }
+    .nav-icon { font-size: 0.95rem; flex-shrink: 0; }
 
     .sidebar-bottom {
-        padding: 12px 12px 20px;
-        border-top: 1px solid rgba(255,255,255,0.07);
+        padding: 14px 14px 22px;
+        border-top: 1px solid #2A2010;
     }
 
     .sidebar-logout-btn {
@@ -176,21 +192,24 @@
         align-items: center;
         gap: 11px;
         width: 100%;
-        background: rgba(220,53,69,0.12);
-        border: 1px solid rgba(220,53,69,0.25);
-        color: #f07070;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 500;
+        background: transparent;
+        border: 1px solid #5A2020;
+        color: #d8806b;
+        padding: 10px 18px;
+        border-radius: 22px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         cursor: pointer;
         transition: all 0.18s;
-        margin-top: 4px;
+        margin-top: 6px;
     }
 
     .sidebar-logout-btn:hover {
-        background: rgba(220,53,69,0.25);
-        color: #ffaaaa;
+        background: #5A2020;
+        color: #FFE3DC;
+        border-color: #5A2020;
     }
 
     /* ── Content area ── */
@@ -200,45 +219,45 @@
         display: flex;
         flex-direction: column;
         min-height: 100vh;
+        background: #0E0C08;
     }
 
     .admin-topbar {
         height: 64px;
-        background: #fff;
-        border-bottom: 1px solid #e4e8f0;
+        background: #14110B;
+        border-bottom: 1px solid #2A2010;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 32px;
+        padding: 0 34px;
         position: sticky;
         top: 0;
         z-index: 100;
-        box-shadow: 0 1px 0 rgba(0,0,0,0.04);
     }
 
     .topbar-breadcrumb {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 0.9rem;
+        gap: 10px;
+        font-size: 0.88rem;
     }
 
-    .breadcrumb-root { color: #8896a8; }
-    .breadcrumb-sep  { color: #bcc5d0; }
-    .breadcrumb-current { color: #1a2035; font-weight: 600; }
+    .breadcrumb-root { color: #B8A878; letter-spacing: 0.06em; }
+    .breadcrumb-sep  { color: #4A3A17; }
+    .breadcrumb-current { color: #F5EBC7; font-weight: 600; }
 
     .topbar-user {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
     }
 
     .user-avatar {
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #4060c0, #7090f0);
-        color: white;
+        background: linear-gradient(135deg, #D9B95F, #B8943D);
+        color: #14110B;
         font-weight: 700;
         font-size: 0.8rem;
         display: flex;
@@ -246,25 +265,43 @@
         justify-content: center;
     }
 
-    .user-name { font-size: 0.85rem; font-weight: 600; color: #1a2035; line-height: 1.2; }
-    .user-role { font-size: 0.72rem; color: #8896a8; }
+    .user-name { font-size: 0.85rem; font-weight: 600; color: #F5EBC7; line-height: 1.2; }
+    .user-role { font-size: 0.7rem; color: #B8A878; letter-spacing: 0.06em; }
 
     .admin-main-content {
-        padding: 32px;
+        padding: 36px;
         flex: 1;
+        background: #0E0C08;
+        color: #F5EBC7;
     }
 
     /* ── Shared admin card ── */
     .admin-card {
-        background: #fff;
+        background: #14110B;
+        border: 1px solid #2A2010;
         border-radius: 14px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-        padding: 24px;
+        box-shadow: 0 2px 18px rgba(0,0,0,0.30);
+        padding: 26px;
     }
 
+    /* Style overrides so Bootstrap-based content reads on dark */
+    .admin-main-content .text-muted { color: #B8A878 !important; }
+    .admin-main-content .alert-success {
+        background: rgba(60,140,90,0.18);
+        border-color: rgba(60,140,90,0.45);
+        color: #b6e3c6;
+    }
+    .admin-main-content .alert-danger {
+        background: rgba(180,60,60,0.16);
+        border-color: rgba(180,60,60,0.45);
+        color: #f1b7b0;
+    }
+    .admin-main-content .btn-close { filter: invert(0.85); }
+
     @@media (max-width: 900px) {
-        .admin-sidebar { width: 200px; }
-        .admin-content-area { margin-left: 200px; }
+        .admin-sidebar { width: 210px; }
+        .admin-content-area { margin-left: 210px; }
+        .admin-main-content { padding: 26px 22px; }
     }
 </style>
 

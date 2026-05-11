@@ -10,5 +10,7 @@ public record UpdateRoomCommand(
     decimal PricePerNight,
     int Capacity,
     bool IsAvailable,
-    string? PhotoPath
+    string? PhotoPath,
+    string? ReservedByUserId = null,
+    bool UpdateReservation = false
 ) : IRequest<bool>;

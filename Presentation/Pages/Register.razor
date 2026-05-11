@@ -1,54 +1,191 @@
 @page "/register"
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Create an account — AurumStay</PageTitle>
 
-<div class="row justify-content-center py-5">
-    <div class="col-12 col-md-8 col-lg-5">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4 p-lg-5">
-                <h1 class="h3 mb-3">Create account</h1>
-                <p class="text-muted mb-4">Create an Identity account for the hotel portal.</p>
+<div class="auth-wrap">
+    <div class="auth-card">
+        <span class="auth-eyebrow">AurumStay</span>
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-sub">A profile for your future stays.</p>
 
-                @if (!string.IsNullOrWhiteSpace(Error))
-                {
-                    <div class="alert alert-danger" role="alert">@Error</div>
-                }
+        @if (!string.IsNullOrWhiteSpace(Error))
+        {
+            <div class="auth-error">@Error</div>
+        }
 
-                <form method="post" action="/account/register">
-                    <AntiforgeryToken />
-                    <input type="hidden" name="ReturnUrl" value="@SafeReturnUrl" />
+        <form method="post" action="/account/register" class="auth-form">
+            <AntiforgeryToken />
+            <input type="hidden" name="ReturnUrl" value="@SafeReturnUrl" />
 
-                    <div class="mb-3">
-                        <label class="form-label" for="email">Email</label>
-                        <input class="form-control" id="email" name="Email" type="email" autocomplete="username" required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="password">Password</label>
-                        <input class="form-control" id="password" name="Password" type="password" autocomplete="new-password" required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="confirmPassword">Confirm password</label>
-                        <input class="form-control" id="confirmPassword" name="ConfirmPassword" type="password" autocomplete="new-password" required />
-                    </div>
-
-                    <div class="form-check mb-4">
-                        <input class="form-check-input" id="isAdmin" name="IsAdmin" type="checkbox" value="true" />
-                        <label class="form-check-label" for="isAdmin">Create this account as admin</label>
-                    </div>
-
-                    <button class="btn btn-primary w-100 mb-3" type="submit">Register</button>
-                </form>
-
-                <p class="text-center text-muted mb-0">
-                    Already have an account?
-                    <a href="/login">Login</a>
-                </p>
+            <div class="auth-field">
+                <label for="email">Email</label>
+                <input id="email" name="Email" type="email" autocomplete="username" required />
             </div>
-        </div>
+
+            <div class="auth-field">
+                <label for="password">Password</label>
+                <input id="password" name="Password" type="password" autocomplete="new-password" required />
+            </div>
+
+            <div class="auth-field">
+                <label for="confirmPassword">Confirm password</label>
+                <input id="confirmPassword" name="ConfirmPassword" type="password" autocomplete="new-password" required />
+            </div>
+
+            <label class="auth-check">
+                <input id="isAdmin" name="IsAdmin" type="checkbox" value="true" />
+                <span>Create this account as administrator</span>
+            </label>
+
+            <button class="auth-btn" type="submit">Create account</button>
+        </form>
+
+        <p class="auth-foot">
+            Already have an account? <a href="/login">Sign in</a>
+        </p>
     </div>
 </div>
+
+<style>
+    .auth-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 56px 16px;
+        min-height: 70vh;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 460px;
+        background: #FFFFFF;
+        border: 1px solid #E7DCC5;
+        border-radius: 18px;
+        padding: 44px 42px;
+        box-shadow: 0 8px 30px rgba(20,17,11,0.06);
+    }
+
+    .auth-eyebrow {
+        display: block;
+        font-size: 0.7rem;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: #B8943D;
+        margin-bottom: 14px;
+    }
+
+    .auth-title {
+        font-family: Georgia, serif;
+        font-size: 1.75rem;
+        font-weight: 500;
+        color: #14110B;
+        margin-bottom: 6px;
+    }
+
+    .auth-sub {
+        font-size: 0.92rem;
+        color: #6F6657;
+        margin-bottom: 26px;
+    }
+
+    .auth-error {
+        background: #FBE9EA;
+        border: 1px solid #E2B7B9;
+        color: #842029;
+        padding: 11px 14px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        margin-bottom: 18px;
+    }
+
+    .auth-form { display: flex; flex-direction: column; gap: 16px; }
+
+    .auth-field { display: flex; flex-direction: column; gap: 6px; }
+
+    .auth-field label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #6F6657;
+    }
+
+    .auth-field input {
+        font-family: inherit;
+        font-size: 0.95rem;
+        color: #14110B;
+        background: #FFFDF8;
+        border: 1px solid #E7DCC5;
+        border-radius: 10px;
+        padding: 11px 14px;
+        outline: none;
+        transition: border-color 0.18s, box-shadow 0.18s;
+    }
+
+    .auth-field input:focus {
+        border-color: #D9B95F;
+        background: #FFFFFF;
+        box-shadow: 0 0 0 3px rgba(217,185,95,0.18);
+    }
+
+    .auth-check {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 0.88rem;
+        color: #6F6657;
+        margin: 2px 0 6px;
+        cursor: pointer;
+    }
+
+    .auth-check input {
+        width: 16px; height: 16px;
+        accent-color: #B8943D;
+        cursor: pointer;
+    }
+
+    .auth-btn {
+        background: #14110B;
+        color: #F5EBC7;
+        border: 1px solid #14110B;
+        padding: 13px 22px;
+        border-radius: 26px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.22s ease;
+        margin-top: 6px;
+    }
+
+    .auth-btn:hover {
+        background: #D9B95F;
+        color: #14110B;
+        border-color: #D9B95F;
+    }
+
+    .auth-foot {
+        text-align: center;
+        font-size: 0.88rem;
+        color: #6F6657;
+        margin: 26px 0 0;
+    }
+
+    .auth-foot a {
+        color: #B8943D;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.18s;
+    }
+
+    .auth-foot a:hover { border-bottom-color: #B8943D; }
+
+    @@media (max-width: 480px) {
+        .auth-card { padding: 32px 26px; }
+    }
+</style>
 
 @code {
     [Parameter]

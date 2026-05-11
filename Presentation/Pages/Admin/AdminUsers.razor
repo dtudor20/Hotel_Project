@@ -145,123 +145,164 @@ else
     }
 
     .page-h2 {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #0f1624;
+        font-family: Georgia, serif;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: #F5EBC7;
         margin-bottom: 4px;
+        letter-spacing: 0.02em;
     }
 
     .user-count-badge {
-        background: #eef0ff;
-        color: #4060b0;
-        padding: 8px 18px;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 600;
+        background: rgba(217,185,95,0.12);
+        color: #D9B95F;
+        padding: 8px 20px;
+        border-radius: 22px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        border: 1px solid rgba(217,185,95,0.30);
     }
 
-    .users-search { max-width: 320px; }
+    .users-search { max-width: 340px; }
 
     .search-input {
         width: 100%;
-        padding: 9px 12px;
-        border: 1px solid #d0d8ec;
-        border-radius: 8px;
-        font-size: 0.875rem;
+        padding: 10px 14px;
+        border: 1px solid #2A2010;
+        border-radius: 22px;
+        font-size: 0.9rem;
         outline: none;
-        background: #fafbff;
+        background: #0E0C08;
+        color: #F5EBC7;
+        transition: border-color 0.18s, box-shadow 0.18s;
     }
+
+    .search-input::placeholder { color: #6F6657; }
 
     .search-input:focus {
-        border-color: #6090f0;
-        box-shadow: 0 0 0 3px rgba(60,120,240,0.1);
+        border-color: #D9B95F;
+        background: #14110B;
+        box-shadow: 0 0 0 3px rgba(217,185,95,0.15);
     }
 
-    .empty-table-state { text-align: center; padding: 60px 24px; }
+    .empty-table-state { text-align: center; padding: 60px 24px; color: #B8A878; }
 
     .admin-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 0.875rem;
+        font-size: 0.88rem;
+        color: #F5EBC7;
     }
 
     .admin-table th {
-        background: #f8faff;
-        color: #6878a0;
+        background: rgba(217,185,95,0.06);
+        color: #B8A878;
         font-weight: 600;
-        font-size: 0.78rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
-        padding: 12px 14px;
-        border-bottom: 1px solid #e8edf8;
+        letter-spacing: 0.10em;
+        padding: 13px 14px;
+        border-bottom: 1px solid #2A2010;
         white-space: nowrap;
     }
 
     .admin-table td {
-        padding: 12px 14px;
-        border-bottom: 1px solid #f0f4fc;
-        color: #1a2035;
+        padding: 14px 14px;
+        border-bottom: 1px solid #2A2010;
+        color: #F5EBC7;
         vertical-align: middle;
     }
 
     .admin-table tr:last-child td { border-bottom: none; }
-    .admin-table tr:hover td { background: #f8faff; }
-    .current-user-row td { background: #f0f5ff !important; }
+    .admin-table tr:hover td { background: rgba(217,185,95,0.04); }
+    .current-user-row td { background: rgba(217,185,95,0.07) !important; }
 
-    .user-cell { display: flex; align-items: center; gap: 10px; }
+    .user-cell { display: flex; align-items: center; gap: 12px; }
 
     .user-avatar-sm {
-        width: 34px;
-        height: 34px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #4060c0, #7090f0);
-        color: white;
+        background: linear-gradient(135deg, #D9B95F, #B8943D);
+        color: #14110B;
         font-weight: 700;
-        font-size: 0.75rem;
+        font-size: 0.78rem;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
     }
 
-    .user-email { font-size: 0.875rem; color: #1a2035; font-weight: 500; }
-    .you-tag { font-size: 0.7rem; color: #4060b0; font-weight: 600; background: #eef0ff; padding: 1px 6px; border-radius: 8px; display: inline-block; margin-top: 2px; }
-
-    .role-badge {
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 3px 10px;
-        border-radius: 12px;
+    .user-email { font-size: 0.9rem; color: #F5EBC7; font-weight: 500; }
+    .you-tag {
+        font-size: 0.65rem;
+        color: #D9B95F;
+        font-weight: 700;
+        background: rgba(217,185,95,0.10);
+        padding: 1px 8px;
+        border-radius: 8px;
         display: inline-block;
+        margin-top: 3px;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        border: 1px solid rgba(217,185,95,0.30);
     }
 
-    .role-admin { background: #fff3e0; color: #b86a00; }
-    .role-user  { background: #f0f2f8; color: #4a5568; }
+    .role-badge {
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 12px;
+        display: inline-block;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .role-admin { background: rgba(217,185,95,0.14); color: #D9B95F; border: 1px solid rgba(217,185,95,0.30); }
+    .role-user  { background: rgba(245,235,199,0.06); color: #B8A878; border: 1px solid #2A2010; }
 
     .status-pill {
         display: inline-block;
-        padding: 4px 10px;
+        padding: 4px 12px;
         border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
     }
 
-    .pill-available   { background: #d4edda; color: #1a6e34; }
-    .pill-unavailable { background: #f8d7da; color: #842029; }
+    .pill-available   { background: rgba(122,176,122,0.18); color: #9CC79C; border: 1px solid rgba(122,176,122,0.40); }
+    .pill-unavailable { background: rgba(180,90,90,0.18);   color: #E1A0A0; border: 1px solid rgba(180,90,90,0.40); }
 
     .btn-action {
-        padding: 5px 12px;
-        border-radius: 7px;
-        font-size: 0.78rem;
+        padding: 6px 14px;
+        border-radius: 16px;
+        font-size: 0.72rem;
         font-weight: 600;
-        border: none;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid transparent;
         cursor: pointer;
-        transition: opacity 0.15s;
+        transition: all 0.18s;
     }
 
-    .btn-action:hover { opacity: 0.8; }
-    .btn-activate { background: #d4edda; color: #1a6e34; }
-    .btn-suspend  { background: #fff3cd; color: #856404; }
+    .btn-activate {
+        background: rgba(122,176,122,0.12);
+        color: #9CC79C;
+        border-color: rgba(122,176,122,0.40);
+    }
+    .btn-activate:hover { background: rgba(122,176,122,0.22); border-color: #9CC79C; }
+
+    .btn-suspend {
+        background: rgba(226,193,90,0.10);
+        color: #E2C15A;
+        border-color: rgba(226,193,90,0.30);
+    }
+    .btn-suspend:hover { background: rgba(226,193,90,0.20); border-color: #E2C15A; }
+
+    .text-success { color: #9CC79C !important; }
 </style>
 
 @code {

@@ -2,8 +2,96 @@
 
 <HotelHeader />
 
-<main class="py-4" style="min-height: 100vh; background-color: #b0b4b8;">
-    <div class="container">
+<main class="aurum-main">
+    <div class="aurum-container">
         @Body
     </div>
+    <footer class="aurum-footer">
+        <div class="aurum-container aurum-footer-inner">
+            <div>
+                <span class="aurum-footer-brand">AurumStay</span>
+                <span class="aurum-footer-tag">A quieter way to arrive.</span>
+            </div>
+            <div class="aurum-footer-links">
+                <a href="/rooms">Rooms</a>
+                <a href="/login">Sign in</a>
+                <a href="/register">Register</a>
+            </div>
+            <div class="aurum-footer-meta">&copy; @DateTime.Now.Year AurumStay. All rights reserved.</div>
+        </div>
+    </footer>
 </main>
+
+<style>
+    html, body {
+        background: #F7F1E6;
+        color: #14110B;
+        font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    .aurum-main {
+        min-height: 100vh;
+        background: #F7F1E6;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .aurum-container {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 24px 28px 0;
+        width: 100%;
+        flex: 1;
+    }
+
+    .aurum-footer {
+        margin-top: 56px;
+        background: #14110B;
+        color: #B8A878;
+        padding: 36px 0 28px;
+    }
+
+    .aurum-footer-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+        padding: 0 28px;
+    }
+
+    .aurum-footer-brand {
+        font-family: Georgia, serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #F5EBC7;
+        margin-right: 10px;
+    }
+
+    .aurum-footer-tag {
+        font-size: 0.82rem;
+        font-style: italic;
+        color: #B8A878;
+    }
+
+    .aurum-footer-links {
+        display: flex;
+        gap: 22px;
+    }
+
+    .aurum-footer-links a {
+        color: #B8A878;
+        text-decoration: none;
+        font-size: 0.85rem;
+        letter-spacing: 0.06em;
+        transition: color 0.18s;
+    }
+
+    .aurum-footer-links a:hover { color: #D9B95F; text-decoration: none; }
+
+    .aurum-footer-meta {
+        font-size: 0.75rem;
+        color: #6F6657;
+        letter-spacing: 0.04em;
+    }
+</style>
