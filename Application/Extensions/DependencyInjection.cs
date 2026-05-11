@@ -1,5 +1,6 @@
 using Hotel.Domain.Entities;
 using Hotel.Infrastructure.Data;
+using Hotel.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -16,6 +17,12 @@ public static class DependencyInjection
         if (!string.IsNullOrWhiteSpace(dbPassword) && connectionString.Contains("{DB_PASSWORD}"))
         {
             connectionString = connectionString.Replace("{DB_PASSWORD}", dbPassword);
+        }
+
+        if (connectionString.Contains("{DB_PASSWORD}"))
+        {
+            throw new InvalidOperationException(
+                "Database password is not configured. Set DB_PASSWORD environment variable or provide ConnectionStrings:DefaultConnection.");
         }
 
         services.AddDbContext<HotelDbContext>(options =>
@@ -36,7 +43,8 @@ public static class DependencyInjection
             })
             .AddEntityFrameworkStores<HotelDbContext>()
             .AddSignInManager()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>();
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 

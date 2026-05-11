@@ -1,5 +1,4 @@
 @using Hotel.Domain.Entities
-@inject AuthenticationStateProvider Auth
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container">
@@ -24,6 +23,10 @@
             <AuthorizeView>
                 <Authorized>
                     <div class="d-flex align-items-center gap-3">
+                        @if (context.User.HasClaim("IsAdmin", "true"))
+                        {
+                            <a class="btn btn-outline-primary btn-sm px-3" href="/admin">Admin Panel</a>
+                        }
                         <span class="text-muted small">@context.User.Identity?.Name</span>
                         <form method="post" action="/account/logout" class="m-0">
                             <AntiforgeryToken />
@@ -42,10 +45,3 @@
         </div>
     </div>
 </nav>
-
-@code {
-    protected override async Task OnInitializedAsync()
-    {
-        await Auth.GetAuthenticationStateAsync();
-    }
-}

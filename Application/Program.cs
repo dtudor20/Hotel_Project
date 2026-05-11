@@ -33,11 +33,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
+app.MapStaticAssets();
 app.MapAccountEndpoints();
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode();

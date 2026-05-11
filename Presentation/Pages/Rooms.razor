@@ -1,8 +1,11 @@
 @page "/rooms"
+@rendermode RenderMode.InteractiveServer
 @using Hotel.Domain.Entities
 @using Hotel.Application.Requests.Queries
+@using Hotel.Application.Requests.Commands
 @using MediatR
 @inject IMediator Mediator
+@inject NavigationManager Nav
 
 <PageTitle>Our Rooms - Hotel</PageTitle>
 
@@ -12,14 +15,19 @@
         <p class="rooms-subtitle">Discover comfort and elegance in every corner</p>
 
         <div class="rooms-filter mt-3">
-            <button class="filter-btn @(showOnlyAvailable ? "" : "active")" @onclick="() => showOnlyAvailable = false">
+            <a class="filter-btn @(showOnlyAvailable ? "" : "active")" href="/rooms">
                 All Rooms
-            </button>
-            <button class="filter-btn @(showOnlyAvailable ? "active" : "")" @onclick="() => showOnlyAvailable = true">
+            </a>
+            <a class="filter-btn @(showOnlyAvailable ? "active" : "")" href="/rooms?available=true">
                 Available Only
-            </button>
+            </a>
         </div>
     </div>
+
+    @if (!string.IsNullOrEmpty(bookingMessage))
+    {
+        <div class="booking-toast">@bookingMessage</div>
+    }
 
     @if (rooms is null)
     {
@@ -92,7 +100,9 @@
                                 <Authorized>
                                     @if (room.IsAvailable)
                                     {
-                                        <button class="btn-book">Book Now</button>
+                                        <button class="btn-book" @onclick="() => BookRoom(room)" disabled="@(bookingRoomId == room.Id)">
+                                            @(bookingRoomId == room.Id ? "Booking..." : "Book Now")
+                                        </button>
                                     }
                                     else
                                     {
@@ -150,9 +160,10 @@
         color: rgba(255,255,255,0.8);
         padding: 8px 20px;
         border-radius: 20px;
-        cursor: pointer;
         font-size: 0.9rem;
         transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
     }
 
     .filter-btn.active,
@@ -160,6 +171,7 @@
         background: white;
         color: #1a1f2e;
         border-color: white;
+        text-decoration: none;
     }
 
     .loading-state, .empty-state {
@@ -348,6 +360,18 @@
         transform: none;
     }
 
+    .booking-toast {
+        max-width: 480px;
+        margin: 0 auto 24px;
+        background: #d4edda;
+        color: #1a6e34;
+        border: 1px solid #b6dec0;
+        padding: 12px 20px;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: 600;
+    }
+
     @@media (max-width: 576px) {
         .rooms-grid { grid-template-columns: 1fr; }
         .rooms-title { font-size: 1.8rem; }
@@ -355,8 +379,12 @@
 </style>
 
 @code {
+    [SupplyParameterFromQuery(Name = "available")]
+    public bool showOnlyAvailable { get; set; }
+
     private List<Room>? rooms;
-    private bool showOnlyAvailable = false;
+    private int? bookingRoomId;
+    private string? bookingMessage;
 
     private List<Room> FilteredRooms =>
         showOnlyAvailable ? rooms?.Where(r => r.IsAvailable).ToList() ?? [] : rooms ?? [];
@@ -364,6 +392,26 @@
     protected override async Task OnInitializedAsync()
     {
         rooms = await Mediator.Send(new GetAllRoomsQuery());
+    }
+
+    private async Task BookRoom(Room room)
+    {
+        bookingRoomId = room.Id;
+        bookingMessage = null;
+
+        await Mediator.Send(new UpdateRoomCommand(
+            room.Id,
+            room.RoomNumber,
+            room.RoomType,
+            room.Description,
+            room.PricePerNight,
+            room.Capacity,
+            IsAvailable: false,
+            room.PhotoPath));
+
+        rooms = await Mediator.Send(new GetAllRoomsQuery());
+        bookingMessage = $"Room {room.RoomNumber} booked successfully!";
+        bookingRoomId = null;
     }
 
     private string GetPlaceholderClass(string roomType) =>
